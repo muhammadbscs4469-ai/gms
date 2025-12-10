@@ -19,57 +19,70 @@ const PurchaseDetails = ({ isOpen, onClose, shipmentId }) => {
       try {
         const response = await getMenuCard(shipmentId);
         console.log('getMenuCard response:', response);
+        console.log('response.data:', response.data);
+        console.log('response.data.items:', response.data.items);
+        console.log('response.data.routeDetails:', response.data.routeDetails);
+        console.log('response.data.proformaInvoice:', response.data.proformaInvoice);
+        
         setRawResponse(response.data);
         const d = response.data;
 
+        // Ensure items is an array and map it correctly
+        const mappedItems = Array.isArray(d.items) ? d.items.map(item => ({
+          category: item.Category,
+          unCode: item.UNCode,
+          hsCode: item.HSCode,
+          storage: item.Storage,
+          itemCode: item.ItemCode,
+          cat: item.CAT,
+          itemName: item.ItemName,
+          qty: item.QTY,
+          backQty: item.BackQty,
+          currency: item.Currency,
+          unitCost: item.UnitCost,
+          fcTotal: item.FCTotal,
+          phpTotal: item.PKRTotal
+        })) : [];
+
+        console.log('Mapped items:', mappedItems);
+        console.log('Items array length:', mappedItems.length);
+
         setData({
-  poNumber: d.PONumber,
-  status: d.Status,
-  shipper: d.Shipper,
-  date: d.Date,
-  contact: d.Contact,
-  phone: d.Phone,
-  email: d.Email,
-  total: d.TotalEUR,
-  totalPkr: d.TotalPKR,
+          poNumber: d.PONumber,
+          status: d.Status,
+          shipper: d.Shipper,
+          date: d.Date,
+          contact: d.Contact,
+          phone: d.Phone,
+          email: d.Email,
+          total: d.TotalEUR,
+          totalPkr: d.TotalPKR,
+          items: mappedItems,
+          // route details
+          routeDetails: d.routeDetails
+            ? {
+                shipmentMode: d.routeDetails.ShipmentMode,
+                incoterm: d.routeDetails.Incoterms,
+                origin: d.routeDetails.Origin,
+                destination: d.routeDetails.Destination
+              }
+            : {},
+          // performa invoice
+          proformaInvoice: d.proformaInvoice
+            ? {
+                poSendDate: d.proformaInvoice.POSendDate ? new Date(d.proformaInvoice.POSendDate).toISOString().split('T')[0] : '',
+                piReceivedDate: d.proformaInvoice.PIReceivedDate ? new Date(d.proformaInvoice.PIReceivedDate).toISOString().split('T')[0] : '',
+                piNumber: d.proformaInvoice.PINumber,
+                attachPi: d.proformaInvoice.AttachedPI
+              }
+            : {}
+        });
 
-  // items array
-  items: d.items?.map(item => ({
-    category: item.Category,
-    unCode: item.UNCode,
-    hsCode: item.HSCode,
-    storage: item.Storage,
-    itemCode: item.ItemCode,
-    cat: item.CAT,
-    itemName: item.ItemName,
-    qty: item.QTY,
-    backQty: item.BackQty,
-    currency: item.Currency,
-    unitCost: item.UnitCost,
-    fcTotal: item.FCTotal,
-    phpTotal: item.PKRTotal
-  })) || [],
-
-  // route details
-  routeDetails: d.routeDetails
-    ? {
-        shipmentMode: d.routeDetails.ShipmentMode,
-        incoterm: d.routeDetails.Incoterms,
-        origin: d.routeDetails.Origin,
-        destination: d.routeDetails.Destination
-      }
-    : {},
-
-  // performa invoice
-  proformaInvoice: d.proformaInvoice
-    ? {
-        poSendDate: d.proformaInvoice.POSendDate,
-        piReceivedDate: d.proformaInvoice.PIReceivedDate,
-        piNumber: d.proformaInvoice.PINumber,
-        attachPi: d.proformaInvoice.AttachedPI
-      }
-    : {}
-});
+        console.log('Final state data:', {
+          items: mappedItems,
+          routeDetails: d.routeDetails,
+          proformaInvoice: d.proformaInvoice
+        });
 
       } catch (error) {
         console.error("Error fetching MenuCard:", error);
@@ -80,7 +93,7 @@ const PurchaseDetails = ({ isOpen, onClose, shipmentId }) => {
     };
 
     fetchData();
-  }, [shipmentId]);
+  }, [shipmentId, isOpen]);
 
   // Define table columns for purchase items
   const columns = [

@@ -8,7 +8,11 @@ export const createMenuCard = async (data) => {
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [ShipmentId, PONumber, Status, Shipper, TotalEUR, Date, Contact, TotalPKR, Phone, Email]
   );
-  return result;
+  return {
+    menuCardId: result.insertId,
+    shipmentId: ShipmentId,
+    message: 'MenuCard created successfully'
+  };
 };
 
 // Add Menucard item

@@ -8,7 +8,10 @@ export const createShipment = async (data) => {
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [Book, DocNum, Date, Status, Shipper, Country, ContactPerson, E_Mail, Options]
   );
-  return result;
+  return {
+    shipmentId: result.insertId,
+    message: 'Shipment created successfully'
+  };
 };
 
 // Get all shipments

@@ -10,7 +10,7 @@ const ActionButton = ({ onClick, children, className }) => (
 
 const Table = ({ data, columns, totalEntries = 109, onActionClick, showActions = true, showPagination = true }) => {
   if (!data || data.length === 0 || !columns || columns.length === 0) {
-    return <p></p>;
+    return <p>No data available to display.</p>;
   }
 
   const handleAction = (action, rowItem) => {
