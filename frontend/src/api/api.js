@@ -16,4 +16,5 @@ const API=axios.create({
  //export const addMenuCardItem=(data)=>API.post("/menucard",data);
  export const addRouteDetail=(data)=>API.post("/other/route",data);
  export const addPerformaInvoice=(data)=>API.post("/other/performa",data);
- export const getMenuCard = (shipmentId) => API.get(`/menucard/${shipmentId}`);
+export const getMenuCard = (shipmentId) => API.get(`/menucard/${shipmentId}`);
+export const searchShipments = (query) => API.get(`/search?query=${encodeURIComponent(query || '')}`);

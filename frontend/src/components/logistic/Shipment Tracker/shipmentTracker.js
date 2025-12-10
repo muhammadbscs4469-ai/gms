@@ -1,45 +1,94 @@
-import React,{ useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Table from '../../ReUseable/Table/Table';
 import PurchaseDetails from '../../Modals/PurchaseDetails';
-import { getShipments,createShipment } from '../../../api/api';
+import { getShipments,searchShipments } from '../../../api/api';
+import axios from 'axios';
 
 const ShipmentTracker = () => {
 
-  const [shipments, setShipments]=useState([]);
+  const [shipments, setShipments] = useState([]);
+  const [originalShipments, setOriginalShipments] = useState([]); //  store default data
+  const [query, setQuery] = useState("");
 
- useEffect(()=>{
-  getShipments()
-  .then(res => {
+  useEffect(() => {
+    getShipments()
+      .then(res => {
+
+        const mapped = res.data.map(item => ({
+          shipmentId: item.Id,
+          book: item.Book,
+          destName: item.DocNum,
+          date: item.Date ? new Date(item.Date).toISOString().split('T')[0] : '',
+          status: item.Status,
+          shipper: item.Shipper,
+          country: item.Country,
+          contactPerson: item.ContactPerson,
+          email: item.E_Mail
+        }));
+
+        setShipments(mapped);
+        setOriginalShipments(mapped);  // ⬅ store original
+      })
+      .catch(err => console.error("Error loading shipments:", err));
+  }, []);
+
  
-    console.log(res.data);
-const mapped = res.data.map(item => ({
-    shipmentId: item.Id,  // 
-    book: item.Book,
-    destName: item.DocNum,
-    date: item.Date,
-    status: item.Status,
-    shipper: item.Shipper,
-    country: item.Country,
-    contactPerson: item.ContactPerson,
-    email: item.E_Mail
-}));
-
-      setShipments(mapped);
-    })
-    .catch(err => console.error("Error loading shipments:", err));
-}, []);
-
+  // SEARCH FUNCTION
   
+  const handleSearch = async (e) => {
+    const q = e.target.value;
+    setQuery(q);
+
+    if (q.trim() === "") {
+      setShipments(originalShipments);   // ⬅ restore original data
+      return;
+    }
+
+    try {
+      const res = await searchShipments(q);
+
+      // map data IF backend returns raw DB fields
+      const mapped = res.data.map(item => ({
+        shipmentId: item.Id,
+        book: item.Book,
+        destName: item.DocNum,
+        date: item.Date ? new Date(item.Date).toISOString().split('T')[0] : '',
+        status: item.Status,
+        shipper: item.Shipper,
+        country: item.Country,
+        contactPerson: item.ContactPerson,
+        email: item.E_Mail
+      }));
+
+      setShipments(mapped);   // ⬅ update table
+    } catch (err) {
+      console.error("Search API error:", err);
+    }
+  };
+
+  let delay=400;
+  //debounce search input
+   function debounce(func, delay){
+    let timer;
+    return function(...args){
+      clearTimeout(timer);
+      timer=setTimeout(()=>func.apply(this,args),delay);
+    };
+   }
+
+   const x =debounce(searchShipments,delay);
+
+
   const columns = [
     { key: 'book', header: 'Book' },
     { key: 'destName', header: 'Dest.Name' },
     { key: 'date', header: 'Date' },
-    { 
-      key: 'status', 
+    {
+      key: 'status',
       header: 'Status',
       render: (row) => (
-        <span style={{ 
-          padding: '4px 8px', 
+        <span style={{
+          padding: '4px 8px',
           borderRadius: '4px',
           fontSize: '12px',
           fontWeight: '500',
@@ -57,10 +106,11 @@ const mapped = res.data.map(item => ({
       key: 'email',
       header: 'E_Mail',
       render: (row) => {
-        const email = row.email;
+        const email = row.email || "";
         const maxLength = 22;
         const isLong = email.length > maxLength;
         const shortened = isLong ? email.substring(0, maxLength) + '...' : email;
+
         return (
           <div className="email-cell">
             <span className="email-short">{shortened}</span>
@@ -71,36 +121,14 @@ const mapped = res.data.map(item => ({
     }
   ];
 
-  // Modal state
+  // MODAL HANDLERS
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [selectedPurchase, setSelectedPurchase] = React.useState(null);
 
-  // Handle action button clicks
-  const handleActionClick = (action, rowData) => {
-    console.log(`Action: ${action}`, rowData);
-    // You can implement specific functionality for each action here
-    switch(action) {
-      case 'info':
-        setSelectedPurchase(rowData);
-        setIsModalOpen(true);
-        console.log("Selected row shipmentId:", rowData.shipmentId);
-        setSelectedPurchase(rowData);
-         setIsModalOpen(true);
-        break;
-
-      case 'list':
-        alert(`View detailed list for: ${rowData.destName}`);
-        break;
-      case 'check':
-        alert(`Approve shipment: ${rowData.destName}`);
-        break;
-      case 'delete':
-        if (window.confirm(`Are you sure you want to delete shipment ${rowData.destName}?`)) {
-          alert(`Deleted: ${rowData.destName}`);
-        }
-        break;
-      default:
-        break;
+  const handleActionClick = (action, row) => {
+    if (action === 'info') {
+      setSelectedPurchase(row);
+      setIsModalOpen(true);
     }
   };
 
@@ -110,13 +138,31 @@ const mapped = res.data.map(item => ({
       <p style={{ padding: '0 20px', marginTop: '0', color: '#666' }}>
         Track and monitor your shipments in real-time.
       </p>
-      <Table 
-        data={shipments} 
-        columns={columns} 
-        totalEntries={109}
+
+      {/* SEARCH BAR */}
+      <div style={{ padding: "0 20px", marginBottom: "10px" }}>
+        <input
+          type="text"
+          value={query}
+          onChange={handleSearch}
+          placeholder="Search"
+          style={{
+            padding: "8px",
+            width: "300px",
+            borderRadius: "4px",
+            border: "1px solid #ccc"
+          }}
+        />
+      </div>
+
+      <Table
+        data={shipments}
+        columns={columns}
+        totalEntries={shipments.length}
         onActionClick={handleActionClick}
       />
-      <PurchaseDetails 
+
+      <PurchaseDetails
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         shipmentId={selectedPurchase?.shipmentId}

@@ -9,6 +9,20 @@ const PurchaseDetails = ({ isOpen, onClose, shipmentId }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [rawResponse, setRawResponse] = useState(null);
+  const initialData = {
+    poNumber: '',
+    status: '',
+    shipper: '',
+    date: '',
+    contact: '',
+    phone: '',
+    email: '',
+    total: '',
+    totalPkr: '',
+    items: [],
+    routeDetails: {},
+    proformaInvoice: {}
+  };
 
   useEffect(() => {
     if (!shipmentId || !isOpen) return;
@@ -16,6 +30,7 @@ const PurchaseDetails = ({ isOpen, onClose, shipmentId }) => {
     const fetchData = async () => {
       setLoading(true);
       setError(null);
+      setData(initialData);
       try {
         const response = await getMenuCard(shipmentId);
         console.log('getMenuCard response:', response);
@@ -129,40 +144,40 @@ const PurchaseDetails = ({ isOpen, onClose, shipmentId }) => {
 
         {/* Purchase Order Info */}
         <div className="purchase-info-header">
-          <h2 style={{ textAlign: 'center', width: '100%', margin: '20px 0' }}>PO Number : {data.poNumber}</h2>
+          <h2 style={{ textAlign: 'center', width: '100%', margin: '20px 0' }}>PO Number : {data.poNumber || '—'}</h2>
         </div>
         
         <div className="purchase-info-grid">
           <div className="info-group-left">
             <div className="info-item">
-              <label>Status : <span>{data.status}</span></label>
+              <label>Status : <span>{data.status || '—'}</span></label>
             </div>
             <div className="info-item">
-              <label>Shipper : <span>{data.shipper}</span></label>
+              <label>Shipper : <span>{data.shipper || '—'}</span></label>
             </div>
             <div className="info-item">
-              <label>Total : <span>{data.total}</span></label>
+              <label>Total : <span>{data.total || '—'}</span></label>
             </div>
           </div>
 
           <div className="info-group-center">
             <div className="info-item">
-              <label>Date : <span>{data.date}</span></label>
+              <label>Date : <span>{data.date || '—'}</span></label>
             </div>
             <div className="info-item">
-              <label>Contact : <span>{data.contact}</span></label>
+              <label>Contact : <span>{data.contact || '—'}</span></label>
             </div>
             <div className="info-item">
-              <label>Total : <span>{data.totalPkr}</span></label>
+              <label>Total : <span>{data.totalPkr || '—'}</span></label>
             </div>
           </div>
 
           <div className="info-group-right">
             <div className="info-item">
-              <label>Phone : <span>{data.phone} /</span></label>
+              <label>Phone : <span>{data.phone ? `${data.phone} /` : '—'}</span></label>
             </div>
             <div className="info-item">
-              <label>Email : <span>{data.email}</span></label>
+              <label>Email : <span>{data.email || '—'}</span></label>
             </div>
           </div>
         </div>
@@ -191,27 +206,30 @@ const PurchaseDetails = ({ isOpen, onClose, shipmentId }) => {
           <h3>🚚 ROUTE DETAILS</h3>
           <div className="route-details-grid">
             <div className="route-item">
-              <label>Shipmen Mode : {data.routeDetails?.shipmentMode}</label>
-              <select defaultValue={data.routeDetails?.shipmentMode}>
-                <option value="Sea"> [ Sea Freight ]</option>
+              <label>Shipmen Mode : {data.routeDetails?.shipmentMode || '—'}</label>
+              <select value={data.routeDetails?.shipmentMode || ''} onChange={()=>{}}>
+                <option value="">[ Select shipment mode ]</option>
+                <option value="Sea">[ Sea Freight ]</option>
               </select>
             </div>
             <div className="route-item">
-              <label>Incoterms : {data.routeDetails?.incoterm}</label>
-              <select defaultValue={data.routeDetails?.incoterm}>
-                <option value="EXW"> [ EXW ] [ EX WORKS ]</option>
+              <label>Incoterms : {data.routeDetails?.incoterm || '—'}</label>
+              <select value={data.routeDetails?.incoterm || ''} onChange={()=>{}}>
+                <option value="">[ Select incoterm ]</option>
+                <option value="EXW">[ EXW ] [ EX WORKS ]</option>
               </select>
             </div>
             <div className="route-item">
-              <label>Origin : {data.routeDetails?.origin}</label>
-              <select defaultValue={data.routeDetails?.origin}>
-                 <option> </option>
+              <label>Origin : {data.routeDetails?.origin || '—'}</label>
+              <select value={data.routeDetails?.origin || ''} onChange={()=>{}}>
+                 <option value="">[ Select origin ]</option>
               </select>
             </div>
             <div className="route-item">
-              <label>Destination : {data.routeDetails?.destination}</label>
-              <select defaultValue={data.routeDetails?.destination}>
-                <option value="KHI"> [ KHI - KARACHI ]</option>
+              <label>Destination : {data.routeDetails?.destination || '—'}</label>
+              <select value={data.routeDetails?.destination || ''} onChange={()=>{}}>
+                <option value="">[ Select destination ]</option>
+                <option value="KHI">[ KHI - KARACHI ]</option>
               </select>
             </div>
           </div>
