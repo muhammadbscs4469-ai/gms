@@ -7,7 +7,7 @@ const LogisticPage = () => {
   return (
     <div style={{ width: '100%' }}>
       <h1 style={{ padding: '20px', margin: 0 }}>Logistic Management</h1>
-      <p style={{ padding: '20px', marginTop: '-20px' }}>Select an option from the sidebar to get started.</p>
+      <p style={{ padding: '20px', marginTop: '-20px' }}></p>
       <Card items={cardData} />
     </div>
   );
